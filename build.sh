@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Some logics of this script are copied from [scripts/build_kernel]. Thanks to UtsavBalar1231.
@@ -6,7 +7,7 @@
 set -e
 
 TOOLCHAIN_PATH=$HOME/proton-clang/proton-clang-20210522/bin
-GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)
+
 TARGET_DEVICE=$1
 
 if [ -z "$1" ]; then
@@ -19,6 +20,7 @@ if [ -z "$1" ]; then
     echo "    bash build.sh umi ksu"
     exit 1
 fi
+
 
 if ! command -v aarch64-linux-gnu-ld >/dev/null 2>&1; then
     echo "[aarch64-linux-gnu-ld] does not exist, please check your environment."
@@ -35,24 +37,13 @@ if ! command -v clang >/dev/null 2>&1; then
     exit 1
 fi
 
+
 # Enable ccache for speed up compiling 
 export CCACHE_DIR="$HOME/.cache/ccache_mikernel" 
 export CC="ccache gcc"
 export CXX="ccache g++"
 export PATH="/usr/lib/ccache:$PATH"
 echo "CCACHE_DIR: [$CCACHE_DIR]"
-
-MAKE_ARGS="ARCH=arm64 SUBARCH=arm64 O=out CC=clang CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- CROSS_COMPILE_COMPAT=arm-linux-gnueabi- CLANG_TRIPLE=aarch64-linux-gnu-"
-
-if [ "$1" == "j1" ]; then
-    make $MAKE_ARGS -j1
-    exit
-fi
-
-if [ "$1" == "continue" ]; then
-    make $MAKE_ARGS -j$(nproc)
-    exit
-fi
 
 if [ ! -f "arch/arm64/configs/${TARGET_DEVICE}_defconfig" ]; then
     echo "No target device [${TARGET_DEVICE}] found."
@@ -61,26 +52,34 @@ if [ ! -f "arch/arm64/configs/${TARGET_DEVICE}_defconfig" ]; then
     exit 1
 fi
 
+
 # Check clang is existing.
 echo "[clang --version]:"
 clang --version
 
+
+
 KSU_ZIP_STR=NoKernelSU
 if [ "$2" == "ksu" ]; then
     KSU_ENABLE=1
-    KSU_ZIP_STR=SukiSU-SUSFS
+    KSU_ZIP_STR=KernelSU
 else
     KSU_ENABLE=0
 fi
+
 
 echo "TARGET_DEVICE: $TARGET_DEVICE"
 
 if [ $KSU_ENABLE -eq 1 ]; then
     echo "KSU is enabled"
-    curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
+    curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 else
     echo "KSU is disabled"
 fi
+
+
+MAKE_ARGS="ARCH=arm64 SUBARCH=arm64 O=out CC=clang CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- CROSS_COMPILE_COMPAT=arm-linux-gnueabi- CLANG_TRIPLE=aarch64-linux-gnu-"
+
 
 echo "Cleaning..."
 
@@ -90,18 +89,16 @@ rm -rf anykernel/
 echo "Clone AnyKernel3 for packing kernel (repo: https://github.com/liyafe1997/AnyKernel3)"
 git clone https://github.com/liyafe1997/AnyKernel3 -b kona --single-branch --depth=1 anykernel
 
-# Add date to local version
-local_version_str="-perf"
-local_version_date_str="-$(date +%Y%m%d)-${GIT_COMMIT_ID}-perf"
-
-sed -i "s/${local_version_str}/${local_version_date_str}/g" arch/arm64/configs/${TARGET_DEVICE}_defconfig
-
 # ------------- Building for AOSP -------------
+
+
 
 # ------------- End of Building for AOSP -------------
 #  If you don't need AOSP you can comment out the above block [Building for AOSP]
 
+
 # ------------- Building for MIUI -------------
+
 
 echo "Clearning [out/] and build for MIUI....."
 rm -rf out/
@@ -137,6 +134,7 @@ sed -i 's/120 90 60/120 90 60 50 30/g' ${dts_source}/dsi-panel-g7a-37-02-0a-dsc-
 sed -i 's/120 90 60/120 90 60 50 30/g' ${dts_source}/dsi-panel-g7a-37-02-0b-dsc-video.dtsi
 sed -i 's/144 120 90 60/144 120 90 60 50 48 30/g' ${dts_source}/dsi-panel-j3s-37-02-0a-dsc-video.dtsi
 
+
 # Enable back brightness control from dtsi
 sed -i 's/\/\/39 00 00 00 00 00 03 51 03 FF/39 00 00 00 00 00 03 51 03 FF/g' ${dts_source}/dsi-panel-j9-38-0a-0a-fhd-video.dtsi
 sed -i 's/\/\/39 00 00 00 00 00 03 51 0D FF/39 00 00 00 00 00 03 51 0D FF/g' ${dts_source}/dsi-panel-j2-p2-1-38-0c-0a-dsc-cmd.dtsi
@@ -163,32 +161,15 @@ sed -i 's/\/\/39 01 00 00 00 00 05 51 07 FF 00 00/39 01 00 00 00 00 05 51 07 FF 
 sed -i 's/\/\/39 01 00 00 01 00 03 51 03 FF/39 01 00 00 01 00 03 51 03 FF/g' ${dts_source}/dsi-panel-j11-38-08-0a-fhd-cmd.dtsi
 sed -i 's/\/\/39 01 00 00 11 00 03 51 03 FF/39 01 00 00 11 00 03 51 03 FF/g' ${dts_source}/dsi-panel-j2-p2-1-38-0c-0a-dsc-cmd.dtsi
 
+
 make $MAKE_ARGS ${TARGET_DEVICE}_defconfig
 
 if [ $KSU_ENABLE -eq 1 ]; then
-    scripts/config --file out/.config \
-    -e KSU \
-    -e DOCKER \
-    -e KSU_MANUAL_HOOK \
-    -e KSU_SUSFS_HAS_MAGIC_MOUNT \
-    -d KSU_SUSFS_SUS_PATH \
-    -e KSU_SUSFS_SUS_MOUNT \
-    -e KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT \
-    -e KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT \
-    -e KSU_SUSFS_SUS_KSTAT \
-    -d KSU_SUSFS_SUS_OVERLAYFS \
-    -e KSU_SUSFS_TRY_UMOUNT \
-    -e KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT \
-    -e KSU_SUSFS_SPOOF_UNAME \
-    -e KSU_SUSFS_ENABLE_LOG \
-    -e KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS \
-    -e KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG \
-    -d KSU_SUSFS_OPEN_REDIRECT \
-    -d KSU_SUSFS_SUS_SU \
-    -e KPM
+    scripts/config --file out/.config -e KSU
 else
     scripts/config --file out/.config -d KSU
 fi
+
 
 scripts/config --file out/.config \
     --set-str STATIC_USERMODEHELPER_PATH /system/bin/micd \
@@ -214,12 +195,10 @@ scripts/config --file out/.config \
     -d CONFIG_MODULE_SIG_SHA512 \
     -d CONFIG_MODULE_SIG_HASH \
     -e MI_FRAGMENTION \
-    -e PERF_HELPER \
-    -e BOOTUP_RECLAIM \
-    -e MI_RECLAIM \
-    -e RTMM \
 
 make $MAKE_ARGS -j$(nproc)
+
+
 
 if [ -f "out/arch/arm64/boot/Image" ]; then
     echo "The file [out/arch/arm64/boot/Image] exists. MIUI Build successfully."
@@ -231,6 +210,7 @@ fi
 echo "Generating [out/arch/arm64/boot/dtb]......"
 find out/arch/arm64/boot/dts -name '*.dtb' -exec cat {} + >out/arch/arm64/boot/dtb
 
+
 # Restore modified dts
 rm -rf ${dts_source}
 mv .dts.bak ${dts_source}
@@ -238,21 +218,14 @@ mv .dts.bak ${dts_source}
 rm -rf anykernel/kernels/
 mkdir -p anykernel/kernels/
 
-# Patch for SukiSU KPM support. 
-if [ $KSU_ENABLE -eq 1 ]; then
-    cd out/arch/arm64/boot/
-    wget https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch/releases/download/0.12.0/patch_linux
-    chmod +x patch_linux
-    ./patch_linux
-    rm Image
-    mv oImage Image
-    cd -
-fi
-
 cp out/arch/arm64/boot/Image anykernel/kernels/
 cp out/arch/arm64/boot/dtb anykernel/kernels/
 
 echo "Build for MIUI finished."
+# ------------- End of Building for MIUI -------------
+#  If you don't need MIUI you can comment out the above block [Building for MIUI]
+
+
 
 # Restore local version string
 sed -i "s/${local_version_date_str}/${local_version_str}/g" arch/arm64/configs/${TARGET_DEVICE}_defconfig
@@ -293,23 +266,3 @@ cp ./${ZIP_FILENAME} ${OUTPUT_DIR}/ 2>/dev/null || echo "Warning: zip file not f
 echo "All output files have been copied to: ${OUTPUT_DIR}"
 echo "Directory structure:"
 find ${OUTPUT_BASE_DIR} -type f -name "*" | head -20
-
-# 显示复制后的目录结构示例
-echo ""
-echo "示例目录结构:"
-echo "out123/"
-echo "├── cas/"
-echo "│   ├── .config"
-echo "│   ├── boot/"
-echo "│   │   ├── Image"
-echo "│   │   ├── dtb"
-echo "│   │   └── ..."
-echo "│   └── Kernel_MIUI_cas_NoKernelSU_20231001_120000_anykernel3_a1b2c3d4.zip"
-echo "└── umi/"
-echo "    └── ksu/"
-echo "        ├── .config"
-echo "        ├── boot/"
-echo "        │   ├── Image"
-echo "        │   ├── dtb"
-echo "        │   └── ..."
-echo "        └── Kernel_MIUI_umi_SukiSU-SUSFS_20231001_120000_anykernel3_a1b2c3d4.zip"
