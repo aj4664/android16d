@@ -237,6 +237,28 @@ struct sock_common {
 	/* public: */
 };
 
+struct sk_security_struct {
+#ifdef CONFIG_NETLABEL
+	enum {				/* NetLabel state */
+		NLBL_UNSET = 0,
+		NLBL_REQUIRE,
+		NLBL_LABELED,
+		NLBL_REQSKB,
+		NLBL_CONNLABELED,
+	} nlbl_state;
+	struct netlbl_lsm_secattr *nlbl_secattr; /* NetLabel sec attributes */
+#endif
+	u32 sid;			/* SID of this object */
+	u32 peer_sid;			/* SID of peer */
+	u16 sclass;			/* sock security class */
+	enum {				/* SCTP association state */
+		SCTP_ASSOC_UNSET = 0,
+		SCTP_ASSOC_SET,
+	} sctp_assoc_state;
+};
+
+struct bpf_sk_storage;
+
 /**
   *	struct sock - network layer representation of sockets
   *	@__sk_common: shared layout with inet_timewait_sock
@@ -498,7 +520,7 @@ struct sock {
 	struct socket		*sk_socket;
 	void			*sk_user_data;
 #ifdef CONFIG_SECURITY
-	void			*sk_security;
+	struct sk_security_struct	sk_security[1];
 #endif
 	struct sock_cgroup_data	sk_cgrp_data;
 	struct mem_cgroup	*sk_memcg;
@@ -515,6 +537,9 @@ struct sock {
 #endif
 	void                    (*sk_destruct)(struct sock *sk);
 	struct sock_reuseport __rcu	*sk_reuseport_cb;
+#ifdef CONFIG_BPF_SYSCALL
+	struct bpf_sk_storage __rcu	*sk_bpf_storage;
+#endif
 	struct rcu_head		sk_rcu;
 
 #if IS_ENABLED(CONFIG_DEBUG_SPINLOCK) || IS_ENABLED(CONFIG_DEBUG_LOCK_ALLOC)
