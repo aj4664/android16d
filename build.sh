@@ -197,6 +197,7 @@ scripts/config --file out/.config \
     -e OVERLAY_FS		\
     -d DEBUG_FS \
     -e MIGT \
+    -e DOCKER \
     -e MIGT_ENERGY_MODEL \
     -e MIHW \
     -e PACKAGE_RUNTIME_INFO \
