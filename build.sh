@@ -20,17 +20,6 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-
-
-if [ ! -d $TOOLCHAIN_PATH ]; then
-    echo "TOOLCHAIN_PATH [$TOOLCHAIN_PATH] does not exist."
-    echo "Please ensure the toolchain is there, or change TOOLCHAIN_PATH in the script to your toolchain path."
-    exit 1
-fi
-
-echo "TOOLCHAIN_PATH: [$TOOLCHAIN_PATH]"
-export PATH="$TOOLCHAIN_PATH:$PATH"
-
 if ! command -v aarch64-linux-gnu-ld >/dev/null 2>&1; then
     echo "[aarch64-linux-gnu-ld] does not exist, please check your environment."
     exit 1
@@ -110,48 +99,6 @@ echo "Clone AnyKernel3 for packing kernel (repo: https://github.com/liyafe1997/A
 git clone https://github.com/liyafe1997/AnyKernel3 -b kona --single-branch --depth=1 anykernel
 
 # ------------- Building for AOSP -------------
-
-echo "Building for AOSP......"
-make $MAKE_ARGS ${TARGET_DEVICE}_defconfig
-
-if [ $KSU_ENABLE -eq 1 ]; then
-    scripts/config --file out/.config -e KSU
-else
-    scripts/config --file out/.config -d KSU
-fi
-
-make $MAKE_ARGS -j$(nproc)
-
-
-if [ -f "out/arch/arm64/boot/Image" ]; then
-    echo "The file [out/arch/arm64/boot/Image] exists. AOSP Build successfully."
-else
-    echo "The file [out/arch/arm64/boot/Image] does not exist. Seems AOSP build failed."
-    exit 1
-fi
-
-echo "Generating [out/arch/arm64/boot/dtb]......"
-find out/arch/arm64/boot/dts -name '*.dtb' -exec cat {} + >out/arch/arm64/boot/dtb
-
-rm -rf anykernel/kernels/
-
-mkdir -p anykernel/kernels/
-
-cp out/arch/arm64/boot/Image anykernel/kernels/
-cp out/arch/arm64/boot/dtb anykernel/kernels/
-
-cd anykernel 
-
-ZIP_FILENAME=Kernel_AOSP_${TARGET_DEVICE}_${KSU_ZIP_STR}_$(date +'%Y%m%d_%H%M%S')_anykernel3_${GIT_COMMIT_ID}.zip
-
-zip -r9 $ZIP_FILENAME ./* -x .git .gitignore out/ ./*.zip
-
-mv $ZIP_FILENAME ../
-
-cd ..
-
-
-echo "Build for AOSP finished."
 
 # ------------- End of Building for AOSP -------------
 #  If you don't need AOSP you can comment out the above block [Building for AOSP]
@@ -286,6 +233,7 @@ echo "Build for MIUI finished."
 #  If you don't need MIUI you can comment out the above block [Building for MIUI]
 
 
+
 cd anykernel 
 
 ZIP_FILENAME=Kernel_MIUI_${TARGET_DEVICE}_${KSU_ZIP_STR}_$(date +'%Y%m%d_%H%M%S')_anykernel3_${GIT_COMMIT_ID}.zip
@@ -297,3 +245,28 @@ mv $ZIP_FILENAME ../
 cd ..
 
 echo "Done. The flashable zip is: [./$ZIP_FILENAME]"
+
+# 创建输出目录结构并复制文件
+OUTPUT_BASE_DIR="out123"
+DEVICE_DIR="${OUTPUT_BASE_DIR}/${TARGET_DEVICE}"
+
+if [ $KSU_ENABLE -eq 1 ]; then
+    # 如果是KSU版本，创建ksu子目录
+    OUTPUT_DIR="${DEVICE_DIR}/ksu"
+else
+    # 如果不是KSU版本，直接使用设备目录
+    OUTPUT_DIR="${DEVICE_DIR}"
+fi
+
+# 创建输出目录
+mkdir -p ${OUTPUT_DIR}
+
+# 复制文件
+echo "Copying output files to ${OUTPUT_DIR}..."
+cp out/.config ${OUTPUT_DIR}/ 2>/dev/null || echo "Warning: .config not found"
+cp -r out/arch/arm64/boot ${OUTPUT_DIR}/ 2>/dev/null || echo "Warning: boot directory not found"
+cp ./${ZIP_FILENAME} ${OUTPUT_DIR}/ 2>/dev/null || echo "Warning: zip file not found"
+
+echo "All output files have been copied to: ${OUTPUT_DIR}"
+echo "Directory structure:"
+find ${OUTPUT_BASE_DIR} -type f -name "*" | head -20
