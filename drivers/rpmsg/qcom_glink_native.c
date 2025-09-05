@@ -52,6 +52,10 @@ do {									     \
 
 #define RPM_GLINK_CID_MIN	1
 #define RPM_GLINK_CID_MAX	65536
+#define RPM_CMD_RX_DONE 0x0000
+#define RPM_CMD_RX_DONE_W_REUSE 0x0000
+#define GLINK_CMD_RX_DONE 0x0000  
+#define GLINK_CMD_RX_DONE_W_REUSE 0x0000
 
 struct glink_msg {
 	__le16 cmd;
@@ -615,10 +619,14 @@ static void qcom_glink_rx_done_work(struct kthread_work *work)
 		list_del(&intent->node);
 		spin_unlock_irqrestore(&channel->intent_lock, flags);
 
-cmd.id = reuse ? GLINK_CMD_RX_DONE_W_REUSE : GLINK_CMD_RX_DONE;
-cmd.lcid = cid;
-cmd.liid = iid;
-__qcom_glink_rx_done(glink, channel, intent, true);
+		// 删除这4行有问题的代码：
+		// cmd.id = reuse ? GLINK_CMD_RX_DONE_W_REUSE : GLINK_CMD_RX_DONE;
+		// cmd.lcid = cid;
+		// cmd.liid = iid;
+		// __qcom_glink_rx_done(glink, channel, intent, true);
+
+		// 改为直接调用：
+		__qcom_glink_rx_done(glink, channel, intent, true);
 
 		spin_lock_irqsave(&channel->intent_lock, flags);
 	}
@@ -2114,8 +2122,6 @@ struct qcom_glink *qcom_glink_native_probe(struct device *dev,
 	if (ret)
 		dev_err(glink->dev, "failed to register chrdev\n");
 
-	glink->ilc = ipc_log_context_create(GLINK_LOG_PAGE_CNT, glink->name, 0);
-
 	return glink;
 
 unregister:
@@ -2167,7 +2173,7 @@ void qcom_glink_native_remove(struct qcom_glink *glink)
 
 	kthread_flush_worker(&glink->kworker);
 	kthread_stop(glink->task);
-	qcom_glink_pipe_reset(glink);
+	
 	mbox_free_channel(glink->mbox_chan);
 }
 EXPORT_SYMBOL_GPL(qcom_glink_native_remove);
