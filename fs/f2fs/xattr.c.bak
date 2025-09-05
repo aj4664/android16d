@@ -783,13 +783,11 @@ same:
 	if (!error && S_ISDIR(inode->i_mode))
 		set_sbi_flag(F2FS_I_SB(inode), SBI_NEED_CP);
 
-// 删除从这里开始到 exit 标签之间的重复代码
-// same:  // 删除这行
-// if (is_inode_flag_set(inode, FI_ACL_MODE)) {  // 删除这行
-//     inode->i_mode = F2FS_I(inode)->i_acl_mode;  // 删除这行
-//     inode->i_ctime = current_time(inode);  // 删除这行
-//     clear_inode_flag(inode, FI_ACL_MODE);  // 删除这行
-// }  // 删除这行
+	if (is_inode_flag_set(inode, FI_ACL_MODE)) {
+		inode->i_mode = F2FS_I(inode)->i_acl_mode;
+		inode->i_ctime = current_time(inode);
+		clear_inode_flag(inode, FI_ACL_MODE);
+	}
 
 exit:
 	kfree(base_addr);
