@@ -138,8 +138,7 @@ void dwc3_set_prtcap(struct dwc3 *dwc, u32 mode)
 void dwc3_en_sleep_mode(struct dwc3 *dwc)
 {
 
-	unsigned long flags;
-	int ret;
+
 	u32 reg;
 
 	if (dwc->dis_enblslpm_quirk)
@@ -1321,8 +1320,7 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
 		}
 		break;
 	case USB_DR_MODE_OTG:
-		INIT_WORK(&dwc->drd_work, dwc3_drd_work);
-		ret = dwc3_drd_init(dwc);
+INIT_WORK(&dwc->drd_work, dwc3_drd_work);
 		if (ret) {
 			if (ret != -EPROBE_DEFER)
 				dev_err(dev, "failed to initialize dual-role\n");
@@ -1340,15 +1338,9 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
 static void dwc3_drd_work(struct work_struct *work)
 {
     struct dwc3 *dwc = container_of(work, struct dwc3, drd_work);
-    // 这里实现模式设置逻辑
     dwc3_set_mode(dwc, DWC3_GCTL_PRTCAP_OTG);
 }
 
-static void dwc3_set_mode_work(struct work_struct *work)
-{
-    struct dwc3 *dwc = container_of(work, struct dwc3, drd_work);
-    // 这里调用原来的设置模式逻辑
-}
 
 static void dwc3_core_exit_mode(struct dwc3 *dwc)
 {

@@ -1246,7 +1246,6 @@ struct dwc3 {
 #define DWC3_REVISION_300A	0x5533300a
 #define DWC3_REVISION_310A	0x5533310a
 
-void dwc3_drd_work(struct work_struct *work);
 /*
  * NOTICE: we're using bit 31 as a "is usb 3.1" flag. This is really
  * just so dwc31 revisions are always larger than dwc3.

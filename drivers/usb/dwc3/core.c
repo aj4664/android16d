@@ -1335,7 +1335,7 @@ INIT_WORK(&dwc->drd_work, dwc3_drd_work);
 	return 0;
 }
 
-static void dwc3_drd_work(struct work_struct *work)
+void dwc3_drd_work(struct work_struct *work)
 {
     struct dwc3 *dwc = container_of(work, struct dwc3, drd_work);
     dwc3_set_mode(dwc, DWC3_GCTL_PRTCAP_OTG);
