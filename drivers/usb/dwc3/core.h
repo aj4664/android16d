@@ -1150,6 +1150,7 @@ struct dwc3_scratchpad_array {
  * @last_run_stop: timestamp denoting the last run_stop update
  */
 struct dwc3 {
+struct work_struct drd_work;
 	struct work_struct	drd_work;
 	struct dwc3_trb		*ep0_trb;
 	void			*bounce;
@@ -1246,7 +1247,6 @@ struct dwc3 {
 #define DWC3_REVISION_300A	0x5533300a
 #define DWC3_REVISION_310A	0x5533310a
 
-void dwc3_drd_work(struct work_struct *work);
 /*
  * NOTICE: we're using bit 31 as a "is usb 3.1" flag. This is really
  * just so dwc31 revisions are always larger than dwc3.
@@ -1688,3 +1688,5 @@ extern int dwc3_notify_event(struct dwc3 *dwc3, unsigned int event,
 						unsigned int value);
 void dwc3_usb3_phy_suspend(struct dwc3 *dwc, int suspend);
 #endif /* __DRIVERS_USB_DWC3_CORE_H */
+
+void dwc3_drd_work(struct work_struct *work);

@@ -1282,7 +1282,6 @@ static int dwc3_core_get_phy(struct dwc3 *dwc)
 
 	return 0;
 }
-
 static int dwc3_core_init_mode(struct dwc3 *dwc)
 {
 	struct device *dev = dwc->dev;
@@ -1320,7 +1319,13 @@ static int dwc3_core_init_mode(struct dwc3 *dwc)
 		}
 		break;
 	case USB_DR_MODE_OTG:
-INIT_WORK(&dwc->drd_work, dwc3_drd_work);
+		INIT_WORK(&dwc->drd_work, dwc3_drd_work);
+		
+		// 添加OTG模式的具体初始化
+		ret = dwc3_otg_init(dwc);  // 如果存在这个函数
+		// 或者直接设置初始模式
+		dwc3_set_prtcap(dwc, DWC3_GCTL_PRTCAP_OTG);
+		
 		if (ret) {
 			if (ret != -EPROBE_DEFER)
 				dev_err(dev, "failed to initialize dual-role\n");
@@ -1338,9 +1343,18 @@ INIT_WORK(&dwc->drd_work, dwc3_drd_work);
 void dwc3_drd_work(struct work_struct *work)
 {
     struct dwc3 *dwc = container_of(work, struct dwc3, drd_work);
-    dwc3_set_mode(dwc, DWC3_GCTL_PRTCAP_OTG);
+    
+    // 这里应该实现OTG模式切换的逻辑
+    // 例如：根据ID引脚状态或VBUS检测来切换模式
+    
+    if (dwc->otg_flags & DWC3_OTG_STATE_HOST) {
+        // 切换到主机模式
+        dwc3_set_mode(dwc, USB_DR_MODE_HOST);
+    } else {
+        // 切换到设备模式
+        dwc3_set_mode(dwc, USB_DR_MODE_PERIPHERAL);
+    }
 }
-
 
 static void dwc3_core_exit_mode(struct dwc3 *dwc)
 {
