@@ -129,6 +129,17 @@ typedef u32 nid_t;
  * higher-priority clients.
  */
 
+/* 添加函数声明 */
+bool f2fs_is_volatile_file(struct inode *inode);
+void stat_inc_volatile_write(struct inode *inode);
+void stat_dec_volatile_write(struct inode *inode);
+void stat_update_max_volatile_write(struct inode *inode);
+void f2fs_drop_inmem_pages(struct inode *inode);
+
+/* 添加标志宏定义 */
+#define FI_VOLATILE_FILE		0x00000800
+#define FI_ATOMIC_REVOKE_REQUEST	0x00001000
+
 struct f2fs_rwsem {
         struct rw_semaphore internal_rwsem;
 #ifdef CONFIG_F2FS_UNFAIR_RWSEM
