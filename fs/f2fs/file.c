@@ -62,7 +62,7 @@ void stat_inc_volatile_write(struct inode *inode)
     struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
     
     f2fs_bug_on(sbi, !f2fs_is_volatile_file(inode));
-    stat_inc_atomic_write(inode);
+    stat_inc_volatile_write(inode);
     // 这里可以添加更多的统计逻辑
 }
 
@@ -71,7 +71,7 @@ void stat_dec_volatile_write(struct inode *inode)
     struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
     
     f2fs_bug_on(sbi, !f2fs_is_volatile_file(inode));
-    stat_dec_atomic_write(inode);
+    stat_dec_volatile_write(inode);
     // 这里可以添加更多的统计逻辑
 }
 

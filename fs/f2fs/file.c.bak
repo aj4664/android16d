@@ -51,6 +51,41 @@ static vm_fault_t f2fs_filemap_fault(struct vm_fault *vmf)
 	return ret;
 }
 
+/* 在 fs/f2fs/file.c 或合适的文件中添加函数实现 */
+bool f2fs_is_volatile_file(struct inode *inode)
+{
+    return is_inode_flag_set(inode, FI_VOLATILE_FILE);
+}
+
+void stat_inc_volatile_write(struct inode *inode)
+{
+    struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+    
+    f2fs_bug_on(sbi, !f2fs_is_volatile_file(inode));
+    stat_inc_atomic_write(inode);
+    // 这里可以添加更多的统计逻辑
+}
+
+void stat_dec_volatile_write(struct inode *inode)
+{
+    struct f2fs_sb_info *sbi = F2FS_I_SB(inode);
+    
+    f2fs_bug_on(sbi, !f2fs_is_volatile_file(inode));
+    stat_dec_atomic_write(inode);
+    // 这里可以添加更多的统计逻辑
+}
+
+void stat_update_max_volatile_write(struct inode *inode)
+{
+    // 实现最大易失性写入统计更新逻辑
+}
+
+void f2fs_drop_inmem_pages(struct inode *inode)
+{
+    // 实现丢弃内存中页面的逻辑
+    // 这通常涉及清理内存中的缓存页面
+}
+
 static vm_fault_t f2fs_vm_page_mkwrite(struct vm_fault *vmf)
 {
 	struct page *page = vmf->page;
