@@ -54,8 +54,6 @@ do {									     \
 #define RPM_GLINK_CID_MAX	65536
 #define RPM_CMD_RX_DONE 0x0000
 #define RPM_CMD_RX_DONE_W_REUSE 0x0000
-#define GLINK_CMD_RX_DONE 0x0000  
-#define GLINK_CMD_RX_DONE_W_REUSE 0x0000
 
 struct glink_msg {
 	__le16 cmd;
