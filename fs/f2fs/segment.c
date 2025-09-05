@@ -3374,9 +3374,10 @@ if (from_gc) {
 	mutex_unlock(&curseg->curseg_mutex);
 	f2fs_up_read(&SM_I(sbi)->curseg_lock);
 
-	if (IS_DATASEG(type))
+	if (IS_DATASEG(type)){
 		f2fs_up_write(&sbi->node_write);
 		f2fs_up_read(&sbi->pin_sem);
+		}
 	return 0;
 out_err:
 	*new_blkaddr = NULL_ADDR;
@@ -3384,9 +3385,10 @@ out_err:
 	up_write(&sit_i->sentry_lock);
 	mutex_unlock(&curseg->curseg_mutex);
 	f2fs_up_read(&SM_I(sbi)->curseg_lock);
-	if (IS_DATASEG(type))
+	if (IS_DATASEG(type)){
 		f2fs_up_write(&sbi->node_write);
 		f2fs_up_read(&sbi->pin_sem);
+		}
 	return -ENOSPC;
 }
 
@@ -3423,7 +3425,6 @@ static void do_write_page(struct f2fs_summary *sum, struct f2fs_io_info *fio) {
 
     f2fs_down_read(&fio->sbi->io_order_lock);
     
-reallocate:
     if (f2fs_allocate_data_block(fio->sbi, fio->page, fio->old_blkaddr, 
             &fio->new_blkaddr, sum, type, fio)) {
         if (fscrypt_inode_uses_fs_layer_crypto(fio->page->mapping->host))
