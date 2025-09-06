@@ -529,7 +529,7 @@ static int qrtr_tx_wait(struct qrtr_node *node, struct sockaddr_qrtr *to,
 // 找到第530行的函数声明，确保参数类型正确：
 static int qrtr_node_enqueue(struct qrtr_node *node, struct sk_buff *skb,
 			     int type, struct sockaddr_qrtr *from,
-			     struct sockaddr_qrtr *to, unsigned int flags);
+			     struct sockaddr_qrtr *to, unsigned int flags)
 {
 	struct qrtr_hdr_v1 *hdr;
 	int confirm_rx;
@@ -1575,7 +1575,7 @@ static int qrtr_bind(struct socket *sock, struct sockaddr *saddr, int len)
 // 找到第1575行的函数声明，确保参数类型正确：
 static int qrtr_local_enqueue(struct qrtr_node *node, struct sk_buff *skb,
 			      int type, struct sockaddr_qrtr *from,
-			      struct sockaddr_qrtr *to, unsigned int flags);
+			      struct sockaddr_qrtr *to, unsigned int flags)
 {
 	struct qrtr_sock *ipc;
 	struct qrtr_cb *cb;
