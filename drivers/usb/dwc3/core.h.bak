@@ -1151,6 +1151,7 @@ struct dwc3_scratchpad_array {
  */
 struct dwc3 {
 struct work_struct drd_work;
+struct work_struct bh_work;
 	struct work_struct	drd_work;
 	struct dwc3_trb		*ep0_trb;
 	void			*bounce;
@@ -1690,3 +1691,4 @@ void dwc3_usb3_phy_suspend(struct dwc3 *dwc, int suspend);
 #endif /* __DRIVERS_USB_DWC3_CORE_H */
 
 void dwc3_drd_work(struct work_struct *work);
+void dwc3_bh_work(struct work_struct *work);

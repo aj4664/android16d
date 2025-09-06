@@ -1150,8 +1150,6 @@ struct dwc3_scratchpad_array {
  * @last_run_stop: timestamp denoting the last run_stop update
  */
 struct dwc3 {
-struct work_struct drd_work;
-struct work_struct bh_work;
 	struct work_struct	drd_work;
 	struct dwc3_trb		*ep0_trb;
 	void			*bounce;
