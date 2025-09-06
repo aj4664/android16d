@@ -1688,5 +1688,3 @@ extern int dwc3_notify_event(struct dwc3 *dwc3, unsigned int event,
 void dwc3_usb3_phy_suspend(struct dwc3 *dwc, int suspend);
 #endif /* __DRIVERS_USB_DWC3_CORE_H */
 
-void dwc3_drd_work(struct work_struct *work);
-void dwc3_bh_work(struct work_struct *work);
