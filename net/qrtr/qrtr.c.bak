@@ -208,7 +208,6 @@ static struct sk_buff *qrtr_alloc_ctrl_packet(struct qrtr_ctrl_pkt **pkt);
 static int qrtr_local_enqueue(struct qrtr_node *node, struct sk_buff *skb,
 			      int type, struct sockaddr_qrtr *from,
 			      struct sockaddr_qrtr *to, unsigned int flags);
-// 找到第211行附近的声明，修改为：
 static int qrtr_bcast_enqueue(struct qrtr_node *node, struct sk_buff *skb,
 			      int type, struct sockaddr_qrtr *from,
 			      struct sockaddr_qrtr *to, unsigned int flags);
@@ -526,10 +525,9 @@ static int qrtr_tx_wait(struct qrtr_node *node, struct sockaddr_qrtr *to,
 }
 
 /* Pass an outgoing packet socket buffer to the endpoint driver. */
-// 找到第530行的函数声明，确保参数类型正确：
 static int qrtr_node_enqueue(struct qrtr_node *node, struct sk_buff *skb,
 			     int type, struct sockaddr_qrtr *from,
-			     struct sockaddr_qrtr *to, unsigned int flags);
+			     struct sockaddr_qrtr *to, unsigned int flags)
 {
 	struct qrtr_hdr_v1 *hdr;
 	int confirm_rx;
@@ -1572,10 +1570,9 @@ static int qrtr_bind(struct socket *sock, struct sockaddr *saddr, int len)
 }
 
 /* Queue packet to local peer socket. */
-// 找到第1575行的函数声明，确保参数类型正确：
 static int qrtr_local_enqueue(struct qrtr_node *node, struct sk_buff *skb,
 			      int type, struct sockaddr_qrtr *from,
-			      struct sockaddr_qrtr *to, unsigned int flags);
+			      struct sockaddr_qrtr *to, unsigned int flags)
 {
 	struct qrtr_sock *ipc;
 	struct qrtr_cb *cb;
@@ -1617,7 +1614,6 @@ static int qrtr_local_enqueue(struct qrtr_node *node, struct sk_buff *skb,
 }
 
 /* Queue packet for broadcast. */
-// 替换第1617-1635行的函数定义：
 static int qrtr_bcast_enqueue(struct qrtr_node *node, struct sk_buff *skb,
 			      int type, struct sockaddr_qrtr *from,
 			      struct sockaddr_qrtr *to, unsigned int flags)
